@@ -1,0 +1,8 @@
+{
+  "name": "अन्नपूर्णा MART",
+  "description": "अन्नपूर्णा MART - Instant Grocery Delivery, Barcode POS Billing & Inventory Management",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

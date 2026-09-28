@@ -1,0 +1,113 @@
+{
+  "projectInfo": {
+    "name": "Annapurna Mart",
+    "description": "Full-stack grocery delivery app with customer and admin portals."
+  },
+  "collections": [
+    {
+      "name": "users",
+      "description": "User profiles and RBAC",
+      "fields": [
+        { "name": "name", "type": "string" },
+        { "name": "email", "type": "string" },
+        { "name": "phone", "type": "string", "optional": true },
+        { "name": "role", "type": "string", "description": "'customer' or 'admin'" },
+        { "name": "addresses", "type": "array" },
+        { "name": "createdAt", "type": "timestamp" }
+      ],
+      "rules": {
+        "read": "request.auth != null && (request.auth.uid == document || isAdmin())",
+        "create": "request.auth != null && request.auth.uid == document && request.resource.data.role == 'customer'",
+        "update": "request.auth != null && (request.auth.uid == document && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']) || isAdmin())",
+        "delete": "isAdmin()"
+      }
+    },
+    {
+      "name": "products",
+      "description": "Grocery products catalog",
+      "fields": [
+        { "name": "name", "type": "string" },
+        { "name": "description", "type": "string" },
+        { "name": "brand", "type": "string" },
+        { "name": "categoryId", "type": "string" },
+        { "name": "categoryName", "type": "string" },
+        { "name": "price", "type": "number" },
+        { "name": "mrp", "type": "number" },
+        { "name": "discountPercentage", "type": "number" },
+        { "name": "unit", "type": "string" },
+        { "name": "imageUrl", "type": "string" },
+        { "name": "stock", "type": "number" },
+        { "name": "isAvailable", "type": "boolean" },
+        { "name": "barcode", "type": "string", "optional": true },
+        { "name": "barcodeType", "type": "string", "optional": true },
+        { "name": "minStockThreshold", "type": "number", "optional": true },
+        { "name": "keywords", "type": "array" },
+        { "name": "createdAt", "type": "timestamp" },
+        { "name": "updatedAt", "type": "timestamp" }
+      ],
+      "rules": {
+        "read": "true",
+        "write": "isAdmin()"
+      }
+    },
+    {
+      "name": "categories",
+      "description": "Product categories",
+      "fields": [
+        { "name": "name", "type": "string" },
+        { "name": "description", "type": "string" },
+        { "name": "imageUrl", "type": "string" },
+        { "name": "isActive", "type": "boolean" },
+        { "name": "sortOrder", "type": "number" }
+      ],
+      "rules": {
+        "read": "true",
+        "write": "isAdmin()"
+      }
+    },
+    {
+      "name": "orders",
+      "description": "Customer orders",
+      "fields": [
+        { "name": "userId", "type": "string" },
+        { "name": "items", "type": "array" },
+        { "name": "subtotal", "type": "number" },
+        { "name": "deliveryFee", "type": "number" },
+        { "name": "discount", "type": "number" },
+        { "name": "total", "type": "number" },
+        { "name": "paymentMethod", "type": "string" },
+        { "name": "paymentStatus", "type": "string" },
+        { "name": "orderStatus", "type": "string" },
+        { "name": "orderType", "type": "string", "optional": true },
+        { "name": "billNumber", "type": "string", "optional": true },
+        { "name": "customerName", "type": "string", "optional": true },
+        { "name": "customerPhone", "type": "string", "optional": true },
+        { "name": "cashierName", "type": "string", "optional": true },
+        { "name": "deliveryAddress", "type": "map" },
+        { "name": "createdAt", "type": "timestamp" },
+        { "name": "updatedAt", "type": "timestamp" }
+      ],
+      "rules": {
+        "read": "request.auth != null && (request.auth.uid == resource.data.userId || isAdmin())",
+        "create": "request.auth != null && request.auth.uid == request.resource.data.userId",
+        "update": "isAdmin() || (request.auth != null && request.auth.uid == resource.data.userId && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['orderStatus']) && request.resource.data.orderStatus == 'cancelled')",
+        "delete": "isAdmin()"
+      }
+    },
+    {
+      "name": "carts",
+      "description": "User shopping carts",
+      "fields": [
+        { "name": "items", "type": "array" },
+        { "name": "updatedAt", "type": "timestamp" }
+      ],
+      "rules": {
+        "read": "request.auth != null && request.auth.uid == document",
+        "write": "request.auth != null && request.auth.uid == document"
+      }
+    }
+  ],
+  "customRules": [
+    "function isAdmin() { return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'; }"
+  ]
+}
